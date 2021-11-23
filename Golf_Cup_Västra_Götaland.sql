@@ -36,24 +36,27 @@ create table jacka(
     s_personnr char(13),
     primary key(s_personnr, modell),
     foreign key(s_personnr) references spelare(personnr)
+    on delete cascade
 )engine=InnoDB;
 
 create table klubba(
 	klubbnr char(13),
     material varchar(20),
     s_personnr char(13),
-    k_serienr char(13),
-    primary key(klubbnr, s_personnr, k_serienr),
-    foreign key(s_personnr) references spelare(personnr),
-    foreign key(k_serienr) references konstruktion(serienr)
+    k_serienr char(13) null unique,
+    primary key(klubbnr, s_personnr),
+    foreign key(s_personnr) references spelare(personnr)
+    on delete cascade
 )engine=InnoDB;
 
 create table deltagande(
 	s_personnr char(13),
     tävlingsnamn varchar(30),
     primary key(s_personnr, tävlingsnamn),
-    foreign key(s_personnr) references spelare(personnr),
+    foreign key(s_personnr) references spelare(personnr)
+    on delete cascade,
     foreign key(tävlingsnamn) references tävling(tävlingsnamn)
+    on delete cascade
 )engine=InnoDB;
 
 create table tävlingsväder(
@@ -61,8 +64,10 @@ create table tävlingsväder(
     regntyp varchar(20),
     tidpunkt datetime,
     primary key(tävlingsnamn, regntyp),
-    foreign key(tävlingsnamn) references tävling(tävlingsnamn),
+    foreign key(tävlingsnamn) references tävling(tävlingsnamn)
+    on delete cascade,
     foreign key(regntyp) references regn(typ)
+    on delete cascade
 )engine=InnoDB;
 
 insert into `golf_cup_västra_götaland`.`spelare` (`personnr`, `namn`, `ålder`) values ('199603142554', 'Johan Andersson', '25');
@@ -95,7 +100,9 @@ insert into `golf_cup_västra_götaland`.`klubba` (`klubbnr`, `material`, `s_per
 insert into `golf_cup_västra_götaland`.`klubba` (`klubbnr`, `material`, `s_personnr`, `k_serienr`) 
 	values ('1', 'trä', '199110014343', '456');
 insert into `golf_cup_västra_götaland`.`klubba` (`klubbnr`, `material`, `s_personnr`, `k_serienr`) 
-	values ('2', 'järn', '199603142554', '456');
+	values ('2', 'järn', '199603142554', '789');
+insert into `golf_cup_västra_götaland`.`klubba` (`klubbnr`, `material`, `s_personnr`) 
+	values ('6', 'järn', '199603142554');
 
 /*Operation 1*/
 select ålder from spelare where namn='Johan Andersson';
@@ -133,20 +140,11 @@ where spelare.namn='Johan Andersson';
 select * from jacka;
 
 /*Operation 9*/
-delete klubba from klubba
-join spelare on klubba.s_personnr=spelare.personnr
-where spelare.namn='Nicklas Jansson';
 
-delete jacka from jacka
-join spelare on jacka.s_personnr=spelare.personnr
-where spelare.namn='Nicklas Jansson';
-
-delete deltagande from deltagande
-join spelare on deltagande.s_personnr=spelare.personnr
-where spelare.namn='Nicklas Jansson';
-
+set sql_safe_updates = 0;
 delete spelare from spelare 
 where namn='Nicklas Jansson';
+set sql_safe_updates = 1;
 select * from spelare;
 
 /*Operation 10*/
